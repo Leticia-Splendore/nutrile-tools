@@ -10,5 +10,5 @@ setupCalculatorModal({
 setupDocumentsModal({
   triggerSelector: '#materials-library',
   modalRootSelector: '#modal-root',
-  categories: documentsLibrary,
+  documents: documentsLibrary,
 });

@@ -7,6 +7,14 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
 function getFileBadge(type) {
   const labels = {
     pdf: 'PDF',
@@ -19,92 +27,88 @@ function getFileBadge(type) {
   return labels[type] || 'Arquivo';
 }
 
-function buildTabs(categories) {
-  return categories
-    .map(
-      (category, index) => `
-        <button
-          class="library-tab ${index === 0 ? 'active' : ''}"
-          type="button"
-          role="tab"
-          aria-selected="${index === 0 ? 'true' : 'false'}"
-          data-library-tab="${escapeHtml(category.id)}"
-        >
-          <i class="${escapeHtml(category.icon || 'fa-regular fa-folder')}"></i>
-          <span>${escapeHtml(category.label)}</span>
-        </button>
-      `,
-    )
-    .join('');
+function getFileIcon(type) {
+  const icons = {
+    pdf: 'fa-regular fa-file-lines',
+    image: 'fa-regular fa-file-image',
+    external: 'fa-solid fa-arrow-up-right-from-square',
+    video: 'fa-regular fa-file-video',
+    zip: 'fa-regular fa-file-zipper',
+  };
+
+  return icons[type] || 'fa-regular fa-file-lines';
 }
 
-function buildPanels(categories) {
-  return categories
-    .map(
-      (category, index) => `
-        <section
-          class="library-panel ${index === 0 ? 'active' : ''}"
-          role="tabpanel"
-          data-library-panel="${escapeHtml(category.id)}"
-          ${index === 0 ? '' : 'hidden'}
-        >
-          <div class="library-grid">
-            ${category.items
-              .map(
-                (item) => `
-                  <article class="library-card">
-                    <div class="library-card-top">
-                      <div class="library-file-icon">
-                        <i class="${item.type === 'external' ? 'fa-solid fa-arrow-up-right-from-square' : 'fa-regular fa-file-lines'}"></i>
-                      </div>
+function prepareItems(items) {
+  return items.map((item) => ({
+    ...item,
+    typeLabel: getFileBadge(item.type),
+    searchIndex: normalizeText(
+      [item.title, item.description, (item.tags || []).join(' ')].join(' '),
+    ),
+  }));
+}
 
-                      <div class="library-card-body">
-                        <div class="library-card-header">
-                          <h3>${escapeHtml(item.title)}</h3>
-                          <span class="library-badge">${escapeHtml(getFileBadge(item.type))}</span>
-                        </div>
-                        <p>${escapeHtml(item.description || 'Arquivo disponível para abertura ou download.')}</p>
-                      </div>
-                    </div>
+function buildDocumentCard(item) {
+  const canDownload = item.type !== 'external';
 
-                    <div class="library-card-actions">
-                      <a
-                        class="library-action secondary"
-                        href="${escapeHtml(item.href)}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Abrir
-                      </a>
+  return `
+    <article class="documents-card">
+      <div class="documents-card-main">
+        <div class="documents-card-icon" aria-hidden="true">
+          <i class="${escapeHtml(getFileIcon(item.type))}"></i>
+        </div>
 
-                      ${item.type === 'external'
-                        ? ''
-                        : `
-                        <a
-                          class="library-action"
-                          href="${escapeHtml(item.href)}"
-                          download="${escapeHtml(item.downloadName || item.title)}"
-                        >
-                          Baixar
-                        </a>
-                      `}
-                    </div>
-                  </article>
-                `,
-              )
-              .join('')}
+        <div class="documents-card-content">
+          <div class="documents-card-header">
+            <h3>${escapeHtml(item.title)}</h3>
+            <span class="documents-card-badge">${escapeHtml(item.typeLabel)}</span>
           </div>
-        </section>
-      `,
-    )
-    .join('');
+
+          <p>${escapeHtml(item.description || 'Arquivo disponível para visualização e download.')}</p>
+
+          <div class="documents-card-actions">
+            <a
+              class="documents-action-btn"
+              href="${escapeHtml(item.href)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Visualizar ${escapeHtml(item.title)}"
+            >
+              <span>Abrir</span>
+            </a>
+
+            ${
+              canDownload
+                ? `
+              <a
+                class="documents-action-btn"
+                href="${escapeHtml(item.href)}"
+                download="${escapeHtml(item.downloadName || item.title)}"
+                aria-label="Baixar ${escapeHtml(item.title)}"
+              >
+                <span>Baixar</span>
+              </a>
+            `
+                : ''
+            }
+          </div>
+        </div>
+      </div>
+    </article>
+  `;
 }
 
-export function setupDocumentsModal({ triggerSelector, modalRootSelector, categories }) {
+export function setupDocumentsModal({
+  triggerSelector,
+  modalRootSelector,
+  documents,
+}) {
   const trigger = document.querySelector(triggerSelector);
   const modalRoot = document.querySelector(modalRootSelector);
+  const allItems = Array.isArray(documents) ? prepareItems(documents) : [];
 
-  if (!trigger || !modalRoot || !Array.isArray(categories) || categories.length === 0) {
+  if (!trigger || !modalRoot || allItems.length === 0) {
     return;
   }
 
@@ -112,21 +116,24 @@ export function setupDocumentsModal({ triggerSelector, modalRootSelector, catego
     'beforeend',
     `
       <div class="modal-overlay" id="documentsModal" aria-hidden="true">
-        <div class="modal modal-library" role="dialog" aria-modal="true" aria-labelledby="documentsModalTitle">
+        <div class="modal modal-library modal-documents" role="dialog" aria-modal="true" aria-labelledby="documentsModalTitle">
           <button class="modal-close" id="closeDocumentsModal" aria-label="Fechar modal">×</button>
 
           <h2 id="documentsModalTitle">Materiais e arquivos</h2>
           <p class="modal-subtitle">
-            Abra o material em uma nova guia ou faça o download direto para o seu dispositivo.
+            Encontre rapidamente os documentos disponíveis.
           </p>
 
-          <div class="library-tabs" role="tablist" aria-label="Categorias de materiais">
-            ${buildTabs(categories)}
+          <div class="documents-toolbar">
+            <div class="documents-search-group">
+              <label class="sr-only" for="documentsSearch">Buscar documento</label>
+              <i class="fa-solid fa-magnifying-glass documents-search-icon" aria-hidden="true"></i>
+              <input id="documentsSearch" type="search" placeholder="Buscar por nome, descrição ou contexto" />
+            </div>
           </div>
 
-          <div class="library-panels">
-            ${buildPanels(categories)}
-          </div>
+          <div class="documents-results-meta" id="documentsResultsMeta" aria-live="polite"></div>
+          <div class="documents-list" id="documentsList"></div>
         </div>
       </div>
     `,
@@ -134,8 +141,11 @@ export function setupDocumentsModal({ triggerSelector, modalRootSelector, catego
 
   const modal = document.getElementById('documentsModal');
   const closeButton = document.getElementById('closeDocumentsModal');
-  const tabs = [...modal.querySelectorAll('[data-library-tab]')];
-  const panels = [...modal.querySelectorAll('[data-library-panel]')];
+  const searchInput = document.getElementById('documentsSearch');
+  const resultsMeta = document.getElementById('documentsResultsMeta');
+  const documentsList = document.getElementById('documentsList');
+
+  const searchCache = new Map();
 
   function openModal() {
     modal.classList.add('open');
@@ -147,35 +157,62 @@ export function setupDocumentsModal({ triggerSelector, modalRootSelector, catego
     modal.setAttribute('aria-hidden', 'true');
   }
 
-  function activateTab(categoryId) {
-    tabs.forEach((tab) => {
-      const isActive = tab.dataset.libraryTab === categoryId;
-      tab.classList.toggle('active', isActive);
-      tab.setAttribute('aria-selected', String(isActive));
-    });
+  function updateResultsMeta(total) {
+    const label =
+      total === 1 ? 'documento encontrado' : 'documentos encontrados';
+    resultsMeta.textContent = `${total} ${label}`;
+  }
 
-    panels.forEach((panel) => {
-      const isActive = panel.dataset.libraryPanel === categoryId;
-      panel.classList.toggle('active', isActive);
-      panel.hidden = !isActive;
-    });
+  function getSearchResult(searchValue) {
+    const normalizedQuery = normalizeText(searchValue);
+
+    if (searchCache.has(normalizedQuery)) {
+      return searchCache.get(normalizedQuery);
+    }
+
+    const result = !normalizedQuery
+      ? allItems
+      : allItems.filter((item) => item.searchIndex.includes(normalizedQuery));
+
+    searchCache.set(normalizedQuery, result);
+    return result;
+  }
+
+  function renderDocuments() {
+    const searched = getSearchResult(searchInput.value);
+
+    updateResultsMeta(searched.length);
+
+    if (searched.length === 0) {
+      documentsList.innerHTML = `
+        <div class="documents-empty-state">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <p>Nenhum documento encontrado para essa busca.</p>
+        </div>
+      `;
+      return;
+    }
+
+    documentsList.innerHTML = searched.map(buildDocumentCard).join('');
+  }
+
+  let debounceId = null;
+  function handleSearchInput() {
+    window.clearTimeout(debounceId);
+    debounceId = window.setTimeout(renderDocuments, 120);
   }
 
   trigger.addEventListener('click', (event) => {
     event.preventDefault();
     openModal();
+    searchInput.focus();
   });
 
   closeButton.addEventListener('click', closeModal);
-
   modal.addEventListener('click', (event) => {
     if (event.target === modal) {
       closeModal();
     }
-  });
-
-  tabs.forEach((tab) => {
-    tab.addEventListener('click', () => activateTab(tab.dataset.libraryTab));
   });
 
   document.addEventListener('keydown', (event) => {
@@ -183,4 +220,8 @@ export function setupDocumentsModal({ triggerSelector, modalRootSelector, catego
       closeModal();
     }
   });
+
+  searchInput.addEventListener('input', handleSearchInput);
+
+  renderDocuments();
 }

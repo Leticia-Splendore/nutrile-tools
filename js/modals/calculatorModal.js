@@ -75,7 +75,11 @@ export function setupCalculatorModal({ triggerSelector, modalRootSelector }) {
     const cooked = Number(cookedWeight.value);
     const meals = Number(mealCount.value);
 
-    calculateButton.disabled = !(cooked > 0 && meals > 0 && foodType.value !== '');
+    calculateButton.disabled = !(
+      cooked > 0 &&
+      meals > 0 &&
+      foodType.value !== ''
+    );
   }
 
   function calculateRawWeight() {
