@@ -17,7 +17,7 @@ export function setupCalculatorModal({ triggerSelector, modalRootSelector }) {
             <label for="foodType">Alimento</label>
             <select id="foodType">
               <option value="0.7">Carnes (todos os tipos)</option>
-              <option value="2.5">Proteína de soja</option>
+              <option value="3.0">Proteína de soja</option>
               <option value="2.4">Macarrão</option>
               <option value="2.8">Arroz</option>
               <option value="1.8">Leguminosas (feijão, lentilha, grão de bico)</option>
@@ -42,6 +42,10 @@ export function setupCalculatorModal({ triggerSelector, modalRootSelector }) {
         <div class="result-card" id="resultCard" hidden>
           <p><strong>Quantidade crua por refeição:</strong> <span id="rawWeightPerMeal">-</span></p>
           <p><strong>Quantidade crua total:</strong> <span id="rawWeightTotal">-</span></p>
+        </div>
+
+        <div class="disclaimer">
+          Esses valores são estimativas; alguns alimentos podem render mais ou menos.
         </div>
       </div>
     </div>
