@@ -26,4 +26,13 @@ export const documentsLibrary = [
     downloadName: 'guia-de-medidas-corporais.pdf',
     tags: ['medidas', 'corporais', 'corporal', 'evolução', 'progresso'],
   },
+  {
+    id: 'planejamento-semanal',
+    title: 'Planner - Planejamento Semanal',
+    description: 'Planner de refeições semanal editável.',
+    type: 'external',
+    href: 'https://canva.link/k2m72xmkf0pexvv',
+    downloadName: '',
+    tags: ['planner', 'semanal', 'organização', 'organizar', 'semana'],
+  },
 ];
