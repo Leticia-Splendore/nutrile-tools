@@ -49,11 +49,32 @@ function prepareItems(items) {
   }));
 }
 
-function buildDocumentCard(item) {
-  const canDownload = item.type !== 'external';
+function buildVideoPreview(item) {
+  const posterAttr = item.poster ? `poster="${escapeHtml(item.poster)}"` : '';
 
   return `
-    <article class="documents-card">
+    <div class="documents-video-wrapper">
+      <video
+        class="documents-video"
+        controls
+        playsinline
+        preload="metadata"
+        ${posterAttr}
+      >
+        <source src="${escapeHtml(item.href)}" type="${escapeHtml(item.mimeType || 'video/mp4')}" />
+        Seu navegador não suporta reprodução de vídeo.
+      </video>
+    </div>
+  `;
+}
+
+function buildDocumentCard(item) {
+  const nonDownloadableTypes = ['external', 'video'];
+  const canDownload = !nonDownloadableTypes.includes(item.type);
+  const isVideo = item.type === 'video';
+
+  return `
+    <article class="documents-card ${isVideo ? 'documents-card-video' : ''}">
       <div class="documents-card-main">
         <div class="documents-card-icon" aria-hidden="true">
           <i class="${escapeHtml(getFileIcon(item.type))}"></i>
@@ -65,7 +86,9 @@ function buildDocumentCard(item) {
             <span class="documents-card-badge">${escapeHtml(item.typeLabel)}</span>
           </div>
 
-          <p>${escapeHtml(item.description || 'Arquivo disponível para visualização e download.')}</p>
+          <p>${escapeHtml(item.description || 'Arquivo disponível para visualização.')}</p>
+
+          ${isVideo ? buildVideoPreview(item) : ''}
 
           <div class="documents-card-actions">
             <a
@@ -73,9 +96,9 @@ function buildDocumentCard(item) {
               href="${escapeHtml(item.href)}"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="Visualizar ${escapeHtml(item.title)}"
+              aria-label="${isVideo ? 'Abrir vídeo em nova aba' : 'Visualizar'} ${escapeHtml(item.title)}"
             >
-              <span>Abrir</span>
+              <span>${isVideo ? 'Abrir em nova aba' : 'Abrir'}</span>
             </a>
 
             ${

@@ -35,4 +35,29 @@ export const documentsLibrary = [
     downloadName: '',
     tags: ['planner', 'semanal', 'organização', 'organizar', 'semana'],
   },
+  {
+    id: 'como-fazer-frango',
+    title: 'Como fazer frango grelhado com pouco óleo',
+    description:
+      'Passo a passo para preparar frango grelhado usando pouco óleo.',
+    type: 'video',
+    href: './files/como-fazer-frango.mov',
+    downloadName: '',
+    tags: [
+      'frango',
+      'grelhado',
+      'baixo teor de óleo',
+      'receita',
+      'passo a passo',
+    ],
+  },
+  {
+    id: 'como-pesar-alimentos',
+    title: 'Como pesar alimentos',
+    description: 'Passo a passo para aprender a pesar alimentos corretamente.',
+    type: 'video',
+    href: './files/como-pesar-alimentos.mov',
+    downloadName: '',
+    tags: ['alimentos', 'medição', 'peso', 'correto', 'passo a passo'],
+  },
 ];
