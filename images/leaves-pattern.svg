@@ -1,21 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 160 160">
-  <g opacity="0.32">
+  <!-- opacity rollback: 0.18 -->
+  <g opacity="0.2">
     <g transform="translate(20 25) scale(1.5) rotate(-12 15 30)">
-      <ellipse cx="15" cy="30" rx="15" ry="30" fill="#7aa874"/>
-      <path d="M 13.543 56.08 L 17.652 6.677" stroke="rgb(82,113,78)" stroke-width="1"/>
-      <path d="M 6.53 40.969 L 14.012 49.118" stroke="rgb(82,113,78)" stroke-width="1"/>
-      <path d="M 14.692 41.155 L 22.71 32.215" stroke="rgb(82,113,78)" stroke-width="1"/>
-      <path d="M 15.599 28.208 L 9.124 20.791" stroke="rgb(82,113,78)" stroke-width="1"/>
-      <path d="M 16.624 18.982 L 24.642 10.042" stroke="rgb(82,113,78)" stroke-width="1"/>
+      <!-- fill rollback: #A06F66 -->
+      <ellipse cx="15" cy="30" rx="15" ry="30" fill="#5C7A68"/>
+      <!-- stroke rollback: #C6B8AE -->
+      <path d="M 13.543 56.08 L 17.652 6.677" stroke="#9BB5A6" stroke-width="1"/>
+      <path d="M 6.53 40.969 L 14.012 49.118" stroke="#9BB5A6" stroke-width="1"/>
+      <path d="M 14.692 41.155 L 22.71 32.215" stroke="#9BB5A6" stroke-width="1"/>
+      <path d="M 15.599 28.208 L 9.124 20.791" stroke="#9BB5A6" stroke-width="1"/>
+      <path d="M 16.624 18.982 L 24.642 10.042" stroke="#9BB5A6" stroke-width="1"/>
     </g>
 
     <g transform="translate(75 60) scale(1.5) rotate(12 15 30)">
-      <ellipse cx="15" cy="30" rx="15" ry="30" fill="#93c28d"/>
-      <path d="M 13.543 56.08 L 17.652 6.677" stroke="rgb(96,132,91)" stroke-width="1"/>
-      <path d="M 6.53 40.969 L 14.012 49.118" stroke="rgb(96,132,91)" stroke-width="1"/>
-      <path d="M 14.692 41.155 L 22.71 32.215" stroke="rgb(96,132,91)" stroke-width="1"/>
-      <path d="M 15.899 28.208 L 8.124 16.791" stroke="rgb(96,132,91)" stroke-width="1"/>
-      <path d="M 16.624 18.982 L 24.642 10.042" stroke="rgb(96,132,91)" stroke-width="1"/>
+      <!-- fill rollback: #C6B8AE -->
+      <ellipse cx="15" cy="30" rx="15" ry="30" fill="#7A9A88"/>
+      <!-- stroke rollback: #A06F66 -->
+      <path d="M 13.543 56.08 L 17.652 6.677" stroke="#C6B8AE" stroke-width="1"/>
+      <path d="M 6.53 40.969 L 14.012 49.118" stroke="#C6B8AE" stroke-width="1"/>
+      <path d="M 14.692 41.155 L 22.71 32.215" stroke="#C6B8AE" stroke-width="1"/>
+      <path d="M 15.899 28.208 L 8.124 16.791" stroke="#C6B8AE" stroke-width="1"/>
+      <path d="M 16.624 18.982 L 24.642 10.042" stroke="#C6B8AE" stroke-width="1"/>
     </g>
   </g>
 </svg>
