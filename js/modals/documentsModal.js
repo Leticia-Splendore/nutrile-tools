@@ -49,6 +49,21 @@ function prepareItems(items) {
   }));
 }
 
+function fileNameFromHref(href) {
+  const clean = String(href || '').split('?')[0].split('#')[0];
+  const name = clean.split('/').pop();
+
+  if (!name) {
+    return 'imagem';
+  }
+
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
+  }
+}
+
 function buildVideoPreview(item) {
   const posterAttr = item.poster ? `poster="${escapeHtml(item.poster)}"` : '';
 
@@ -68,7 +83,43 @@ function buildVideoPreview(item) {
   `;
 }
 
+function buildImageCard(item) {
+  const downloadName = item.downloadName || fileNameFromHref(item.href);
+
+  return `
+    <article class="documents-card documents-card-image">
+      <div class="documents-image-body">
+        <div class="documents-card-header">
+          <h3>${escapeHtml(item.title)}</h3>
+          <span class="documents-card-badge">${escapeHtml(item.typeLabel)}</span>
+        </div>
+
+        <p>${escapeHtml(item.description || '')}</p>
+
+        <button
+          type="button"
+          class="documents-image-trigger"
+          data-src="${escapeHtml(item.href)}"
+          data-alt="${escapeHtml(item.title)}"
+          data-download="${escapeHtml(downloadName)}"
+          aria-label="Ampliar ${escapeHtml(item.title)}"
+        >
+          <img
+            class="documents-image"
+            src="${escapeHtml(item.href)}"
+            alt="${escapeHtml(item.title)}"
+          />
+        </button>
+      </div>
+    </article>
+  `;
+}
+
 function buildDocumentCard(item) {
+  if (item.type === 'image') {
+    return buildImageCard(item);
+  }
+
   const nonDownloadableTypes = ['external', 'video'];
   const canDownload = !nonDownloadableTypes.includes(item.type);
   const isVideo = item.type === 'video';
@@ -158,6 +209,19 @@ export function setupDocumentsModal({
           <div class="documents-results-meta" id="documentsResultsMeta" aria-live="polite"></div>
           <div class="documents-list" id="documentsList"></div>
         </div>
+
+        <div class="documents-image-lightbox" id="documentsImageLightbox" hidden>
+          <button
+            type="button"
+            class="documents-image-lightbox-backdrop"
+            id="documentsImageLightboxBackdrop"
+            aria-label="Fechar imagem"
+          ></button>
+          <div class="documents-image-lightbox-content" role="dialog" aria-modal="true" aria-label="Imagem ampliada">
+            <img id="documentsImageLightboxImg" alt="" />
+            <a id="documentsImageDownload" class="documents-image-download" href="#" download>Baixar</a>
+          </div>
+        </div>
       </div>
     `,
   );
@@ -167,17 +231,95 @@ export function setupDocumentsModal({
   const searchInput = document.getElementById('documentsSearch');
   const resultsMeta = document.getElementById('documentsResultsMeta');
   const documentsList = document.getElementById('documentsList');
+  const imageLightbox = document.getElementById('documentsImageLightbox');
+  const imageLightboxBackdrop = document.getElementById(
+    'documentsImageLightboxBackdrop',
+  );
+  const imageLightboxImg = document.getElementById('documentsImageLightboxImg');
+  const imageDownloadLink = document.getElementById('documentsImageDownload');
 
   const searchCache = new Map();
+  let lastImageTrigger = null;
+
+  function fitVideo(video) {
+    const { videoWidth, videoHeight } = video;
+    if (!videoWidth || !videoHeight) {
+      return;
+    }
+
+    const availableWidth = video.parentElement?.clientWidth || videoWidth;
+    const maxHeight = Math.min(440, window.innerHeight * 0.62);
+    const ratio = videoWidth / videoHeight;
+
+    let width = Math.min(availableWidth, videoWidth);
+    let height = width / ratio;
+
+    if (height > maxHeight) {
+      height = maxHeight;
+      width = height * ratio;
+    }
+
+    video.style.aspectRatio = `${videoWidth} / ${videoHeight}`;
+    video.style.width = `${Math.round(width)}px`;
+    video.style.height = 'auto';
+  }
+
+  function syncVideoFrames() {
+    documentsList.querySelectorAll('.documents-video').forEach((video) => {
+      const apply = () => fitVideo(video);
+
+      if (video.readyState >= 1) {
+        apply();
+        return;
+      }
+
+      if (video.dataset.fitBound === 'true') {
+        return;
+      }
+
+      video.dataset.fitBound = 'true';
+      video.addEventListener('loadedmetadata', apply, { once: true });
+    });
+  }
+
+  function openImageLightbox({ src, alt, downloadName }) {
+    lastImageTrigger = document.activeElement;
+    imageLightboxImg.src = src;
+    imageLightboxImg.alt = alt || '';
+    imageDownloadLink.href = src;
+    imageDownloadLink.download = downloadName || fileNameFromHref(src);
+    imageLightbox.hidden = false;
+    imageDownloadLink.focus();
+  }
+
+  function closeImageLightbox() {
+    if (imageLightbox.hidden) {
+      return;
+    }
+
+    imageLightbox.hidden = true;
+    imageLightboxImg.removeAttribute('src');
+    imageLightboxImg.alt = '';
+
+    if (lastImageTrigger && typeof lastImageTrigger.focus === 'function') {
+      lastImageTrigger.focus();
+    }
+  }
 
   function openModal() {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
+    syncVideoFrames();
   }
 
   function closeModal() {
+    closeImageLightbox();
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
+
+    documentsList.querySelectorAll('.documents-video').forEach((video) => {
+      video.pause();
+    });
   }
 
   function updateResultsMeta(total) {
@@ -217,6 +359,7 @@ export function setupDocumentsModal({
     }
 
     documentsList.innerHTML = searched.map(buildDocumentCard).join('');
+    syncVideoFrames();
   }
 
   let debounceId = null;
@@ -239,10 +382,33 @@ export function setupDocumentsModal({
   });
 
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && modal.classList.contains('open')) {
-      closeModal();
+    if (event.key !== 'Escape' || !modal.classList.contains('open')) {
+      return;
     }
+
+    if (!imageLightbox.hidden) {
+      closeImageLightbox();
+      return;
+    }
+
+    closeModal();
   });
+
+  documentsList.addEventListener('click', (event) => {
+    const trigger = event.target.closest('.documents-image-trigger');
+    if (!trigger) {
+      return;
+    }
+
+    openImageLightbox({
+      src: trigger.dataset.src,
+      alt: trigger.dataset.alt,
+      downloadName: trigger.dataset.download,
+    });
+  });
+
+  imageLightboxBackdrop.addEventListener('click', closeImageLightbox);
+  window.addEventListener('resize', syncVideoFrames);
 
   searchInput.addEventListener('input', handleSearchInput);
 

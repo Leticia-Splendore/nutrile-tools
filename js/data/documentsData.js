@@ -60,4 +60,30 @@ export const documentsLibrary = [
     downloadName: '',
     tags: ['alimentos', 'medição', 'peso', 'correto', 'passo a passo'],
   },
+  {
+    id: 'grupos-alimentares',
+    title: 'Grupos Alimentares',
+    description: 'Exemplificação de alimentos de cada grupo alimentar.',
+    type: 'pdf',
+    href: './files/grupos-alimentares.pdf',
+    downloadName: '',
+    tags: ['alimentos', 'grupos', 'alimentar', 'alimentares', 'exemplos'],
+  },
+  {
+    id: 'divisao-do-prato',
+    title: 'Divisão de um prato saudável e equilibrado',
+    description:
+      'Como equilibrar as porções que devem compor seu prato de maneira saudável.',
+    type: 'image',
+    href: './files/divisao-do-prato.jpg',
+    downloadName: '',
+    tags: [
+      'divisão',
+      'prato',
+      'equilibrar',
+      'saudável',
+      'equilibrio',
+      'montar',
+    ],
+  },
 ];
