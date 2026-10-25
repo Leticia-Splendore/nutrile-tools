@@ -86,4 +86,13 @@ export const documentsLibrary = [
       'montar',
     ],
   },
+  {
+    id: 'guia-marmitas',
+    title: 'Guia de Marmitas',
+    description: 'Passo a passo de como fazer marmitas.',
+    type: 'pdf',
+    href: './files/guia-marmitas.pdf',
+    downloadName: '',
+    tags: ['alimentos', 'marmita', 'guia', 'passo', 'como fazer'],
+  },
 ];
