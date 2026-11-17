@@ -20,7 +20,6 @@ function getFileBadge(type) {
     pdf: 'PDF',
     image: 'Imagem',
     external: 'Link',
-    video: 'Vídeo',
     zip: 'ZIP',
   };
 
@@ -32,7 +31,6 @@ function getFileIcon(type) {
     pdf: 'fa-regular fa-file-lines',
     image: 'fa-regular fa-file-image',
     external: 'fa-solid fa-arrow-up-right-from-square',
-    video: 'fa-regular fa-file-video',
     zip: 'fa-regular fa-file-zipper',
   };
 
@@ -62,25 +60,6 @@ function fileNameFromHref(href) {
   } catch {
     return name;
   }
-}
-
-function buildVideoPreview(item) {
-  const posterAttr = item.poster ? `poster="${escapeHtml(item.poster)}"` : '';
-
-  return `
-    <div class="documents-video-wrapper">
-      <video
-        class="documents-video"
-        controls
-        playsinline
-        preload="metadata"
-        ${posterAttr}
-      >
-        <source src="${escapeHtml(item.href)}" type="${escapeHtml(item.mimeType || 'video/mp4')}" />
-        Seu navegador não suporta reprodução de vídeo.
-      </video>
-    </div>
-  `;
 }
 
 function buildImageCard(item) {
@@ -120,12 +99,10 @@ function buildDocumentCard(item) {
     return buildImageCard(item);
   }
 
-  const nonDownloadableTypes = ['external', 'video'];
-  const canDownload = !nonDownloadableTypes.includes(item.type);
-  const isVideo = item.type === 'video';
+  const canDownload = item.type !== 'external';
 
   return `
-    <article class="documents-card ${isVideo ? 'documents-card-video' : ''}">
+    <article class="documents-card">
       <div class="documents-card-main">
         <div class="documents-card-icon" aria-hidden="true">
           <i class="${escapeHtml(getFileIcon(item.type))}"></i>
@@ -139,17 +116,15 @@ function buildDocumentCard(item) {
 
           <p>${escapeHtml(item.description || 'Arquivo disponível para visualização.')}</p>
 
-          ${isVideo ? buildVideoPreview(item) : ''}
-
           <div class="documents-card-actions">
             <a
               class="documents-action-btn"
               href="${escapeHtml(item.href)}"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="${isVideo ? 'Abrir vídeo em nova aba' : 'Visualizar'} ${escapeHtml(item.title)}"
+              aria-label="Visualizar ${escapeHtml(item.title)}"
             >
-              <span>${isVideo ? 'Abrir em nova aba' : 'Abrir'}</span>
+              <span>Abrir</span>
             </a>
 
             ${
@@ -190,17 +165,17 @@ export function setupDocumentsModal({
     'beforeend',
     `
       <div class="modal-overlay" id="documentsModal" aria-hidden="true">
-        <div class="modal modal-library modal-documents" role="dialog" aria-modal="true" aria-labelledby="documentsModalTitle">
+        <div class="modal modal-documents" role="dialog" aria-modal="true" aria-labelledby="documentsModalTitle">
           <button class="modal-close" id="closeDocumentsModal" aria-label="Fechar modal">×</button>
 
-          <h2 id="documentsModalTitle">Materiais e arquivos</h2>
+          <h2 id="documentsModalTitle">Guias</h2>
           <p class="modal-subtitle">
-            Encontre rapidamente os documentos disponíveis.
+            Encontre rapidamente os guias disponíveis.
           </p>
 
           <div class="documents-toolbar">
             <div class="documents-search-group">
-              <label class="sr-only" for="documentsSearch">Buscar documento</label>
+              <label class="sr-only" for="documentsSearch">Buscar guia</label>
               <i class="fa-solid fa-magnifying-glass documents-search-icon" aria-hidden="true"></i>
               <input id="documentsSearch" type="search" placeholder="Buscar por nome, descrição ou contexto" />
             </div>
@@ -241,47 +216,6 @@ export function setupDocumentsModal({
   const searchCache = new Map();
   let lastImageTrigger = null;
 
-  function fitVideo(video) {
-    const { videoWidth, videoHeight } = video;
-    if (!videoWidth || !videoHeight) {
-      return;
-    }
-
-    const availableWidth = video.parentElement?.clientWidth || videoWidth;
-    const maxHeight = Math.min(440, window.innerHeight * 0.62);
-    const ratio = videoWidth / videoHeight;
-
-    let width = Math.min(availableWidth, videoWidth);
-    let height = width / ratio;
-
-    if (height > maxHeight) {
-      height = maxHeight;
-      width = height * ratio;
-    }
-
-    video.style.aspectRatio = `${videoWidth} / ${videoHeight}`;
-    video.style.width = `${Math.round(width)}px`;
-    video.style.height = 'auto';
-  }
-
-  function syncVideoFrames() {
-    documentsList.querySelectorAll('.documents-video').forEach((video) => {
-      const apply = () => fitVideo(video);
-
-      if (video.readyState >= 1) {
-        apply();
-        return;
-      }
-
-      if (video.dataset.fitBound === 'true') {
-        return;
-      }
-
-      video.dataset.fitBound = 'true';
-      video.addEventListener('loadedmetadata', apply, { once: true });
-    });
-  }
-
   function openImageLightbox({ src, alt, downloadName }) {
     lastImageTrigger = document.activeElement;
     imageLightboxImg.src = src;
@@ -309,22 +243,17 @@ export function setupDocumentsModal({
   function openModal() {
     modal.classList.add('open');
     modal.setAttribute('aria-hidden', 'false');
-    syncVideoFrames();
   }
 
   function closeModal() {
     closeImageLightbox();
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
-
-    documentsList.querySelectorAll('.documents-video').forEach((video) => {
-      video.pause();
-    });
   }
 
   function updateResultsMeta(total) {
     const label =
-      total === 1 ? 'documento encontrado' : 'documentos encontrados';
+      total === 1 ? 'guia encontrado' : 'guias encontrados';
     resultsMeta.textContent = `${total} ${label}`;
   }
 
@@ -352,14 +281,13 @@ export function setupDocumentsModal({
       documentsList.innerHTML = `
         <div class="documents-empty-state">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <p>Nenhum documento encontrado para essa busca.</p>
+          <p>Nenhum guia encontrado para essa busca.</p>
         </div>
       `;
       return;
     }
 
     documentsList.innerHTML = searched.map(buildDocumentCard).join('');
-    syncVideoFrames();
   }
 
   let debounceId = null;
@@ -408,7 +336,6 @@ export function setupDocumentsModal({
   });
 
   imageLightboxBackdrop.addEventListener('click', closeImageLightbox);
-  window.addEventListener('resize', syncVideoFrames);
 
   searchInput.addEventListener('input', handleSearchInput);
 

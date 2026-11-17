@@ -14,14 +14,6 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Bulgary Rose';
-  src: url('../fonts/bulgary-rose.otf') format('opentype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
 *,
 *::before,
 *::after {
@@ -38,17 +30,14 @@
 
   --font-heading: 'Swifted', Georgia, serif;
   --font-body: 'Montserrat', system-ui, sans-serif;
-  --font-accent: 'Bulgary Rose', Georgia, serif;
 
   --color-text: var(--color-light);
-  --color-surface: rgba(47, 74, 58, 0.92);
   --color-surface-border: rgba(242, 238, 233, 0.12);
   --color-divider: rgba(198, 184, 174, 0.45);
 
   --color-button: var(--color-light);
   --color-button-text: var(--color-primary);
   --color-button-hover: var(--color-background);
-  --color-button-empty: rgba(198, 184, 174, 0.22);
 
   --shadow-container: 0 12px 40px rgba(47, 74, 58, 0.28);
   --shadow-card: 0 8px 32px rgba(47, 74, 58, 0.18);
@@ -58,8 +47,6 @@
   --radius-sm: 12px;
 
   --profile-size: clamp(110px, 24vw, 160px);
-  --title-size: clamp(22px, 4vw, 28px);
-  --bio-size: clamp(17px, 2.8vw, 22px);
 
   --content-width: min(600px, calc(100vw - 24px));
   --links-width: min(420px, 100%);
@@ -85,7 +72,7 @@ body {
       rgba(198, 184, 174, 0.35),
       transparent 42%
     ),
-    var(--color-light);
+    linear-gradient(160deg, #f6f3ef, #ebe5de);
   color: var(--color-text);
   font-family: var(--font-body);
   font-weight: 400;
@@ -116,8 +103,10 @@ a {
   flex-direction: column;
   align-items: center;
 
-  background: var(--color-surface) url('../images/leaves-pattern.svg');
-  background-size: 100px 120px;
+  background:
+    linear-gradient(160deg, rgba(53, 82, 65, 0.93), rgba(41, 66, 51, 0.93)),
+    url('../images/Ativo 11.svg') center / 140px auto repeat,
+    linear-gradient(160deg, #355241, #294233);
   border: 1px solid var(--color-surface-border);
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
   box-shadow: var(--shadow-card);
@@ -141,27 +130,6 @@ a {
   object-fit: cover;
   box-shadow: 0 0 0 2px rgba(242, 238, 233, 0.25);
 }
-
-h1 {
-  padding: 0 16px;
-  font-family: var(--font-heading);
-  font-size: var(--title-size);
-  font-weight: 400;
-  letter-spacing: 0.02em;
-  margin-bottom: 6px;
-  word-break: break-word;
-}
-
-/* Versão anterior: nome com Bulgary Rose
-.bio {
-  padding: 0 16px;
-  margin-bottom: 18px;
-  font-family: var(--font-accent);
-  font-size: var(--bio-size);
-  color: var(--color-background);
-  letter-spacing: 0.04em;
-}
-*/
 
 .bio-logo {
   width: min(280px, 78%);
@@ -213,18 +181,6 @@ h1 {
   box-shadow: 0 6px 20px rgba(47, 74, 58, 0.14);
 }
 
-.link-btn.empty {
-  background-color: var(--color-button-empty);
-  border-color: transparent;
-  pointer-events: none;
-}
-
-.link-btn.empty:hover {
-  transform: none;
-  background-color: var(--color-button-empty);
-  box-shadow: none;
-}
-
 .footer {
   margin: 24px 0 10px;
   padding: 0 16px;
@@ -249,11 +205,6 @@ h1 {
 .social a:hover {
   color: var(--color-light);
   transform: translateY(-2px);
-}
-
-.click-count {
-  margin-top: 18px;
-  font-size: 14px;
 }
 
 @media (max-width: 768px) {
@@ -298,14 +249,7 @@ h1 {
   .content-list {
     width: 100%;
     padding: 28px 14px 20px;
-    background-size: 80px 96px;
   }
-
-  h1 {
-    font-size: 22px;
-  }
-
-  /* .bio { font-size: 17px; } */
 
   .bio-logo {
     width: min(240px, 82%);

@@ -1,6 +1,10 @@
 import { documentsLibrary } from './data/documentsData.js';
 import { setupCalculatorModal } from './modals/calculatorModal.js';
 import { setupDocumentsModal } from './modals/documentsModal.js';
+import { setupVideosModal } from './modals/videosModal.js';
+
+const guides = documentsLibrary.filter((item) => item.type !== 'video');
+const videos = documentsLibrary.filter((item) => item.type === 'video');
 
 setupCalculatorModal({
   triggerSelector: '#calculator',
@@ -8,7 +12,13 @@ setupCalculatorModal({
 });
 
 setupDocumentsModal({
-  triggerSelector: '#materials-library',
+  triggerSelector: '#guides',
   modalRootSelector: '#modal-root',
-  documents: documentsLibrary,
+  documents: guides,
+});
+
+setupVideosModal({
+  triggerSelector: '#videos',
+  modalRootSelector: '#modal-root',
+  videos,
 });
